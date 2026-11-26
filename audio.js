@@ -4,6 +4,7 @@ export class RetroAudio {
     this.muted = false;
     this.radioIndex = 0;
     this.radioStations = [
+      { name: 'DOM PÉRIGNON', src: './dom-perignon.mp3' },
       { name: 'HEAD RADIO (SYNTH)', notes: [110, 146.83, 164.81, 196, 220, 196, 164.81, 146.83] },
       { name: 'MSX FM (BASSLINE)', notes: [82.41, 82.41, 98, 110, 123.47, 110, 98, 73.42] },
       { name: 'LIPS 106 (RETRO)', notes: [220, 261.63, 329.63, 293.66, 261.63, 246.94, 220, 196] }
@@ -11,6 +12,11 @@ export class RetroAudio {
     this.noteTimer = 0;
     this.step = 0;
     this.sirenTimer = 0;
+
+    this.customTrack = new Audio('./dom-perignon.mp3');
+    this.customTrack.loop = true;
+    this.customTrack.volume = 0.65;
+    this.customTrack.preload = 'auto';
   }
 
   unlock() {
@@ -23,10 +29,29 @@ export class RetroAudio {
     if (this.ctx && this.ctx.state === 'suspended') {
       this.ctx.resume().catch(() => {});
     }
+    this.syncCustomTrack();
+  }
+
+  isCustomRadioSelected() {
+    return Boolean(this.radioStations[this.radioIndex]?.src);
+  }
+
+  syncCustomTrack() {
+    if (!this.customTrack) return;
+    if (!this.muted && this.isCustomRadioSelected()) {
+      const targetSrc = this.radioStations[this.radioIndex].src;
+      if (!this.customTrack.src.endsWith(targetSrc.replace(/^\.\//, ''))) {
+        this.customTrack.src = targetSrc;
+      }
+      this.customTrack.play().catch(() => {});
+    } else {
+      this.customTrack.pause();
+    }
   }
 
   toggleMute() {
     this.muted = !this.muted;
+    this.syncCustomTrack();
     return this.muted;
   }
 
@@ -34,6 +59,7 @@ export class RetroAudio {
     this.radioIndex = (this.radioIndex + 1) % this.radioStations.length;
     this.step = 0;
     this.noteTimer = 0;
+    this.syncCustomTrack();
     return `RADIO : ${this.radioStations[this.radioIndex].name}`;
   }
 
@@ -99,18 +125,31 @@ export class RetroAudio {
   }
 
   updateRadio(dt, wantedLevel = 0) {
-    if (this.muted || !this.ctx || this.ctx.state !== 'running') return;
-
-    this.noteTimer -= dt;
-    if (this.noteTimer <= 0) {
-      const station = this.radioStations[this.radioIndex];
-      const freq = station.notes[this.step % station.notes.length];
-      this.step += 1;
-      this.noteTimer = 0.24;
-      this.playTone(freq, 0.16, 'triangle', 0.025);
+    if (this.muted) {
+      if (this.customTrack && !this.customTrack.paused) {
+        this.customTrack.pause();
+      }
+      return;
     }
 
-    if (wantedLevel > 0) {
+    if (this.isCustomRadioSelected()) {
+      if (this.customTrack && this.customTrack.paused) {
+        this.customTrack.play().catch(() => {});
+      }
+    } else if (this.ctx && this.ctx.state === 'running') {
+      this.noteTimer -= dt;
+      if (this.noteTimer <= 0) {
+        const station = this.radioStations[this.radioIndex];
+        if (station?.notes) {
+          const freq = station.notes[this.step % station.notes.length];
+          this.step += 1;
+          this.noteTimer = 0.24;
+          this.playTone(freq, 0.16, 'triangle', 0.025);
+        }
+      }
+    }
+
+    if (wantedLevel > 0 && this.ctx && this.ctx.state === 'running') {
       this.sirenTimer -= dt;
       if (this.sirenTimer <= 0) {
         this.sirenTimer = Math.max(0.55, 1.15 - wantedLevel * 0.1);
