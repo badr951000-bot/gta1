@@ -4,7 +4,7 @@ export class RetroAudio {
     this.muted = false;
     this.radioIndex = 0;
     this.radioStations = [
-      { name: 'DOM PÉRIGNON', src: './dom-perignon.mp3' },
+      { name: 'DOM PÉRIGNON', src: './dom-perignon.mp3.mp3' },
       { name: 'HEAD RADIO (SYNTH)', notes: [110, 146.83, 164.81, 196, 220, 196, 164.81, 146.83] },
       { name: 'MSX FM (BASSLINE)', notes: [82.41, 82.41, 98, 110, 123.47, 110, 98, 73.42] },
       { name: 'LIPS 106 (RETRO)', notes: [220, 261.63, 329.63, 293.66, 261.63, 246.94, 220, 196] }
@@ -12,11 +12,21 @@ export class RetroAudio {
     this.noteTimer = 0;
     this.step = 0;
     this.sirenTimer = 0;
+    this.audioError = false;
 
-    this.customTrack = new Audio('./dom-perignon.mp3');
+    this.customTrack = new Audio('./dom-perignon.mp3.mp3');
     this.customTrack.loop = true;
-    this.customTrack.volume = 0.65;
+    this.customTrack.volume = 0.75;
     this.customTrack.preload = 'auto';
+
+    this.customTrack.addEventListener('error', () => {
+      this.audioError = true;
+    });
+
+    this.customTrack.addEventListener('canplaythrough', () => {
+      this.audioError = false;
+      this.syncCustomTrack();
+    });
   }
 
   unlock() {
@@ -38,14 +48,21 @@ export class RetroAudio {
 
   syncCustomTrack() {
     if (!this.customTrack) return;
-    if (!this.muted && this.isCustomRadioSelected()) {
-      const targetSrc = this.radioStations[this.radioIndex].src;
-      if (!this.customTrack.src.endsWith(targetSrc.replace(/^\.\//, ''))) {
-        this.customTrack.src = targetSrc;
-      }
-      this.customTrack.play().catch(() => {});
-    } else {
+
+    if (this.muted || !this.isCustomRadioSelected()) {
       this.customTrack.pause();
+      return;
+    }
+
+    const targetFile = this.radioStations[this.radioIndex].src.replace(/^\.\//, '');
+    if (!this.customTrack.src.endsWith('/' + targetFile) && !this.customTrack.src.endsWith(targetFile)) {
+      this.customTrack.src = this.radioStations[this.radioIndex].src;
+      this.customTrack.load();
+    }
+
+    const playPromise = this.customTrack.play();
+    if (playPromise && typeof playPromise.catch === 'function') {
+      playPromise.catch(() => {});
     }
   }
 
@@ -60,7 +77,12 @@ export class RetroAudio {
     this.step = 0;
     this.noteTimer = 0;
     this.syncCustomTrack();
-    return `RADIO : ${this.radioStations[this.radioIndex].name}`;
+
+    const station = this.radioStations[this.radioIndex];
+    if (station.src && this.audioError) {
+      return `RADIO : ${station.name} (FICHIER ILLISIBLE)`;
+    }
+    return `RADIO : ${station.name}`;
   }
 
   playTone(freq, duration, type = 'square', volume = 0.06, slideTo = null) {
@@ -133,7 +155,7 @@ export class RetroAudio {
     }
 
     if (this.isCustomRadioSelected()) {
-      if (this.customTrack && this.customTrack.paused) {
+      if (this.customTrack && this.customTrack.paused && !this.audioError) {
         this.customTrack.play().catch(() => {});
       }
     } else if (this.ctx && this.ctx.state === 'running') {
