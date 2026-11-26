@@ -4,7 +4,7 @@ export class RetroAudio {
     this.muted = false;
     this.radioIndex = 0;
     this.radioStations = [
-      { name: 'DOM PÉRIGNON', src: './dom-perignon.mp3.mp3' },
+      { name: 'DOM PÉRIGNON', src: './dom-perignon.mp3' },
       { name: 'HEAD RADIO (SYNTH)', notes: [110, 146.83, 164.81, 196, 220, 196, 164.81, 146.83] },
       { name: 'MSX FM (BASSLINE)', notes: [82.41, 82.41, 98, 110, 123.47, 110, 98, 73.42] },
       { name: 'LIPS 106 (RETRO)', notes: [220, 261.63, 329.63, 293.66, 261.63, 246.94, 220, 196] }
@@ -12,20 +12,23 @@ export class RetroAudio {
     this.noteTimer = 0;
     this.step = 0;
     this.sirenTimer = 0;
-    this.audioError = false;
+    this.audioErrorCode = null;
 
-    this.customTrack = new Audio('./dom-perignon.mp3.mp3');
+    this.customTrack = new Audio('./dom-perignon.mp3');
     this.customTrack.loop = true;
     this.customTrack.volume = 0.75;
     this.customTrack.preload = 'auto';
 
     this.customTrack.addEventListener('error', () => {
-      this.audioError = true;
+      this.audioErrorCode = this.customTrack.error ? this.customTrack.error.code : 'UNKNOWN';
     });
 
-    this.customTrack.addEventListener('canplaythrough', () => {
-      this.audioError = false;
-      this.syncCustomTrack();
+    this.customTrack.addEventListener('canplay', () => {
+      this.audioErrorCode = null;
+    });
+
+    this.customTrack.addEventListener('playing', () => {
+      this.audioErrorCode = null;
     });
   }
 
@@ -54,9 +57,13 @@ export class RetroAudio {
       return;
     }
 
-    const targetFile = this.radioStations[this.radioIndex].src.replace(/^\.\//, '');
-    if (!this.customTrack.src.endsWith('/' + targetFile) && !this.customTrack.src.endsWith(targetFile)) {
-      this.customTrack.src = this.radioStations[this.radioIndex].src;
+    const station = this.radioStations[this.radioIndex];
+    const targetFile = station.src.replace(/^\.\//, '');
+    const currentSrc = this.customTrack.getAttribute('src') || '';
+
+    if (currentSrc !== station.src && !this.customTrack.src.endsWith('/' + targetFile)) {
+      this.audioErrorCode = null;
+      this.customTrack.src = station.src;
       this.customTrack.load();
     }
 
@@ -79,8 +86,8 @@ export class RetroAudio {
     this.syncCustomTrack();
 
     const station = this.radioStations[this.radioIndex];
-    if (station.src && this.audioError) {
-      return `RADIO : ${station.name} (FICHIER ILLISIBLE)`;
+    if (station.src && this.audioErrorCode) {
+      return `RADIO : ${station.name} (ERR ${this.audioErrorCode})`;
     }
     return `RADIO : ${station.name}`;
   }
@@ -155,7 +162,7 @@ export class RetroAudio {
     }
 
     if (this.isCustomRadioSelected()) {
-      if (this.customTrack && this.customTrack.paused && !this.audioError) {
+      if (this.customTrack && this.customTrack.paused && !this.audioErrorCode) {
         this.customTrack.play().catch(() => {});
       }
     } else if (this.ctx && this.ctx.state === 'running') {
