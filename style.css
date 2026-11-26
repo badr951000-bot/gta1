@@ -1,0 +1,260 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #111;
+  font-family: "Courier New", Courier, monospace;
+  color: #f5f5f5;
+}
+
+#gameCanvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.hud-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px 20px;
+  gap: 12px;
+}
+
+.hud-box {
+  background: rgba(12, 14, 18, 0.82);
+  border: 2px solid #d4af37;
+  padding: 10px 14px;
+  min-width: 150px;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.55);
+}
+
+.hud-box.center {
+  text-align: center;
+}
+
+.hud-box.right {
+  text-align: right;
+}
+
+.label {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #aaa;
+}
+
+.value {
+  font-size: 22px;
+  font-weight: bold;
+  margin-top: 2px;
+}
+
+.value.cash {
+  color: #4cd137;
+}
+
+.value.wanted {
+  color: #fbc531;
+  letter-spacing: 3px;
+}
+
+.value.health {
+  color: #ff6b6b;
+}
+
+.banner {
+  position: fixed;
+  top: 92px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(12, 14, 18, 0.9);
+  border: 2px solid #fbc531;
+  color: #fbc531;
+  padding: 10px 22px;
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.banner.visible {
+  opacity: 1;
+}
+
+.mission-box {
+  position: fixed;
+  top: 145px;
+  right: 20px;
+  background: rgba(12, 14, 18, 0.86);
+  border: 2px solid #fbc531;
+  padding: 10px 14px;
+  min-width: 210px;
+  text-align: right;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.55);
+}
+
+.mission-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: #fbc531;
+  letter-spacing: 1px;
+}
+
+.mission-timer {
+  font-size: 20px;
+  font-weight: bold;
+  color: #ff6b6b;
+  margin-top: 4px;
+}
+
+.vehicle-box {
+  position: fixed;
+  bottom: 44px;
+  right: 20px;
+  background: rgba(12, 14, 18, 0.85);
+  border: 2px solid #00a8ff;
+  padding: 10px 14px;
+  font-weight: bold;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.vehicle-box .speed {
+  color: #00a8ff;
+}
+
+#minimap {
+  position: fixed;
+  bottom: 44px;
+  left: 20px;
+  width: 170px;
+  height: 170px;
+  background: rgba(15, 15, 15, 0.88);
+  border: 2px solid #d4af37;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.65);
+}
+
+.controls-hint {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(12, 14, 18, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 5px 12px;
+  font-size: 11px;
+  color: #ddd;
+  white-space: nowrap;
+}
+
+.hidden {
+  display: none;
+}
+
+#touch-controls {
+  display: none;
+}
+
+@media (pointer: coarse), (max-width: 900px) {
+  #minimap {
+    bottom: 138px;
+    left: 14px;
+    width: 120px;
+    height: 120px;
+  }
+
+  .vehicle-box {
+    bottom: 138px;
+    right: 14px;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .controls-hint {
+    display: none;
+  }
+
+  #touch-controls {
+    position: fixed;
+    inset: auto 0 12px 0;
+    z-index: 30;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 14px;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+
+  .touch-pad,
+  .touch-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    pointer-events: auto;
+  }
+
+  .touch-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .t-btn {
+    width: 54px;
+    height: 54px;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    background: rgba(15, 23, 42, 0.72);
+    color: #f8fafc;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 16px;
+    touch-action: manipulation;
+  }
+
+  .t-btn:active {
+    background: rgba(56, 189, 248, 0.55);
+    transform: scale(0.95);
+  }
+
+  .t-small {
+    width: auto;
+    height: 38px;
+    padding: 0 10px;
+    font-size: 11px;
+  }
+
+  .t-fire {
+    background: rgba(239, 68, 68, 0.78);
+    border-color: rgba(254, 202, 202, 0.6);
+  }
+
+  .t-action {
+    background: rgba(245, 158, 11, 0.78);
+  }
+
+  .t-drift {
+    width: auto;
+    padding: 0 12px;
+    font-size: 12px;
+  }
+}

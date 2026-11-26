@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>GTA 1997 - Top-Down Prototype</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+
+  <div id="hud">
+    <div class="hud-top">
+      <div class="hud-box">
+        <div class="label">CASH</div>
+        <div id="hud-cash" class="value cash">$0</div>
+      </div>
+
+      <div class="hud-box center">
+        <div class="label">WANTED</div>
+        <div id="hud-wanted" class="value wanted">☆☆☆☆☆</div>
+      </div>
+
+      <div class="hud-box right">
+        <div class="label">SANTÉ / ARMURE</div>
+        <div id="hud-health" class="value health">100%</div>
+      </div>
+    </div>
+
+    <div id="hud-banner" class="banner"></div>
+
+    <div id="hud-mission" class="mission-box hidden">
+      <div id="hud-mission-title" class="mission-title"></div>
+      <div id="hud-mission-timer" class="mission-timer"></div>
+    </div>
+
+    <div id="hud-vehicle" class="vehicle-box hidden">
+      <span id="hud-veh-name">SEDAN</span>
+      <span class="speed"><span id="hud-veh-speed">0</span> KM/H</span>
+    </div>
+
+    <canvas id="minimap" width="170" height="170"></canvas>
+
+    <div id="touch-controls" aria-hidden="true">
+      <div class="touch-pad">
+        <button type="button" class="t-btn" data-key="KeyW">▲</button>
+        <div class="touch-row">
+          <button type="button" class="t-btn" data-key="KeyA">◀</button>
+          <button type="button" class="t-btn" data-key="KeyS">▼</button>
+          <button type="button" class="t-btn" data-key="KeyD">▶</button>
+        </div>
+      </div>
+
+      <div class="touch-actions">
+        <div class="touch-row">
+          <button type="button" class="t-btn t-small" data-action="weapon">ARME</button>
+          <button type="button" class="t-btn t-small" data-action="radio">RADIO</button>
+        </div>
+        <div class="touch-row">
+          <button type="button" class="t-btn t-action" data-action="interact">E</button>
+          <button type="button" class="t-btn t-drift" data-key="Space">DRIFT</button>
+          <button type="button" class="t-btn t-fire" data-action="fire">TIR</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls-hint">
+      ZQSD / Flèches : Bouger / Conduire &nbsp;|&nbsp; Espace : Drift &nbsp;|&nbsp; E : Véhicule / Cabine [T] &nbsp;|&nbsp; F / Clic : Tirer &nbsp;|&nbsp; R : Arme &nbsp;|&nbsp; B : Radio &nbsp;|&nbsp; M : Son &nbsp;|&nbsp; P : Pause
+    </div>
+  </div>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
