@@ -1132,18 +1132,9 @@ function updateHUD() {
   const empty = '☆'.repeat(5 - player.wantedLevel);
   hudWanted.textContent = filled + empty;
 
-  const wSpec = player.currentWeaponSpec;
-  const ammoLabel = wSpec.id === 'PISTOL' ? '∞' : `${player.currentAmmo}`;
-
-  if (player.vehicle) {
-    hudVehicle.classList.remove('hidden');
-    hudVehName.textContent = `${player.vehicle.name} (${player.vehicle.hp} HP)`;
-    hudVehSpeed.textContent = Math.round(player.vehicle.getSpeed() * 0.32);
-  } else {
-    hudVehicle.classList.remove('hidden');
-    hudVehName.textContent = `${wSpec.name} [${ammoLabel}] • R: ARME • B: RADIO`;
-    hudVehSpeed.textContent = 0;
-  }
+  hudVehicle.classList.add('hidden');
+  hudVehName.textContent = '';
+  hudVehSpeed.textContent = '';
 
   if (missions.activeMission) {
     hudMission.classList.remove('hidden');
