@@ -502,41 +502,119 @@ window.addEventListener('keyup', (e) => {
   keys[e.code] = false;
 });
 
-document.querySelectorAll('#touch-controls .t-btn').forEach((btn) => {
-  const code = btn.dataset.key;
-  const action = btn.dataset.action;
+function setupTouchControls() {
+  const joyZone = document.getElementById('joystick-zone');
+  const joyStick = document.getElementById('joystick-stick');
+  let activeTouchId = null;
 
-  const press = (e) => {
-    e.preventDefault();
-    audio.unlock();
-    if (gameOverScreen && (code === 'Space' || action === 'interact')) {
-      respawnFromGameOver();
-      return;
-    }
-    if (code) {
-      keys[code] = true;
-    } else if (action === 'fire') {
-      triggerShoot();
-    } else if (action === 'interact') {
-      handleInteractKey();
-    } else if (action === 'weapon') {
-      player.cycleWeapon(showBanner);
-    } else if (action === 'radio') {
-      showBanner(audio.cycleRadio());
-    }
+  const setMoveKeys = (nx, ny) => {
+    const deadzone = 0.28;
+    keys['KeyW'] = ny < -deadzone;
+    keys['KeyS'] = ny > deadzone;
+    keys['KeyA'] = nx < -deadzone;
+    keys['KeyD'] = nx > deadzone;
   };
 
-  const release = (e) => {
-    e.preventDefault();
-    if (code) {
-      keys[code] = false;
+  const resetJoystick = () => {
+    activeTouchId = null;
+    if (joyStick) {
+      joyStick.style.transform = 'translate(0px, 0px)';
     }
+    setMoveKeys(0, 0);
   };
 
-  btn.addEventListener('touchstart', press, { passive: false });
-  btn.addEventListener('touchend', release, { passive: false });
-  btn.addEventListener('touchcancel', release, { passive: false });
-});
+  const updateJoystickFromTouch = (touch) => {
+    if (!joyZone || !joyStick) return;
+    const rect = joyZone.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const maxRadius = rect.width * 0.36;
+
+    let dx = touch.clientX - cx;
+    let dy = touch.clientY - cy;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist > maxRadius && dist > 0) {
+      dx = (dx / dist) * maxRadius;
+      dy = (dy / dist) * maxRadius;
+    }
+
+    joyStick.style.transform = `translate(${dx}px, ${dy}px)`;
+    setMoveKeys(dx / maxRadius, dy / maxRadius);
+  };
+
+  if (joyZone) {
+    joyZone.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      audio.unlock();
+      if (activeTouchId !== null) return;
+      const t = e.changedTouches[0];
+      activeTouchId = t.identifier;
+      updateJoystickFromTouch(t);
+    }, { passive: false });
+
+    joyZone.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      for (const t of e.changedTouches) {
+        if (t.identifier === activeTouchId) {
+          updateJoystickFromTouch(t);
+          break;
+        }
+      }
+    }, { passive: false });
+
+    const endJoy = (e) => {
+      e.preventDefault();
+      for (const t of e.changedTouches) {
+        if (t.identifier === activeTouchId) {
+          resetJoystick();
+          break;
+        }
+      }
+    };
+
+    joyZone.addEventListener('touchend', endJoy, { passive: false });
+    joyZone.addEventListener('touchcancel', endJoy, { passive: false });
+  }
+
+  document.querySelectorAll('#touch-controls .t-btn').forEach((btn) => {
+    const code = btn.dataset.key;
+    const action = btn.dataset.action;
+
+    const press = (e) => {
+      e.preventDefault();
+      audio.unlock();
+      if (gameOverScreen && (code === 'Space' || action === 'interact')) {
+        respawnFromGameOver();
+        return;
+      }
+      if (code) {
+        keys[code] = true;
+      } else if (action === 'fire') {
+        triggerShoot();
+      } else if (action === 'interact') {
+        handleInteractKey();
+      } else if (action === 'weapon') {
+        player.cycleWeapon(showBanner);
+      } else if (action === 'radio') {
+        showBanner(audio.cycleRadio());
+      }
+    };
+
+    const release = (e) => {
+      e.preventDefault();
+      if (code) {
+        keys[code] = false;
+      }
+    };
+
+    btn.addEventListener('touchstart', press, { passive: false });
+    btn.addEventListener('touchend', release, { passive: false });
+    btn.addEventListener('touchcancel', release, { passive: false });
+  });
+}
+
+setupTouchControls();
 
 function recordSkidmarks() {
   const v = player.vehicle;
