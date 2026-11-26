@@ -173,14 +173,14 @@ body {
 
 @media (pointer: coarse), (max-width: 900px) {
   #minimap {
-    bottom: 138px;
+    bottom: 158px;
     left: 14px;
-    width: 120px;
-    height: 120px;
+    width: 115px;
+    height: 115px;
   }
 
   .vehicle-box {
-    bottom: 138px;
+    bottom: 158px;
     right: 14px;
     padding: 8px 10px;
     font-size: 12px;
@@ -192,23 +192,48 @@ body {
 
   #touch-controls {
     position: fixed;
-    inset: auto 0 12px 0;
+    inset: auto 0 14px 0;
     z-index: 30;
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    padding: 0 14px;
+    padding: 0 16px;
     pointer-events: none;
     user-select: none;
     -webkit-user-select: none;
     touch-action: none;
   }
 
-  .touch-pad,
+  .joystick-zone {
+    position: relative;
+    width: 126px;
+    height: 126px;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.65);
+    border: 2px solid rgba(255, 255, 255, 0.32);
+    pointer-events: auto;
+    touch-action: none;
+  }
+
+  .joystick-stick {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 52px;
+    height: 52px;
+    margin-left: -26px;
+    margin-top: -26px;
+    border-radius: 50%;
+    background: rgba(56, 189, 248, 0.82);
+    border: 2px solid #f8fafc;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+  }
+
   .touch-actions {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-end;
     gap: 8px;
     pointer-events: auto;
   }
@@ -227,7 +252,7 @@ body {
     color: #f8fafc;
     font-family: monospace;
     font-weight: bold;
-    font-size: 16px;
+    font-size: 15px;
     touch-action: manipulation;
   }
 
